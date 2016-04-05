@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="4" height="4" tilewidth="64" tileheight="96" nextobjectid="1">
+ <properties>
+  <property name="lifespan" type="int" value="4"/>
+ </properties>
+ <tileset firstgid="1" name="tree" tilewidth="64" tileheight="96" tilecount="16" columns="4">
+  <image source="../images/elements/tree.png" width="256" height="384"/>
+  <tile id="3">
+   <objectgroup draworder="index">
+    <object id="0" x="10.1423" y="38.5407" width="53.6092" height="5.21603"/>
+   </objectgroup>
+  </tile>
+  <tile id="7">
+   <objectgroup draworder="index">
+    <object id="0" x="19.1254" y="42.018" width="41.1487" height="5.21603"/>
+   </objectgroup>
+  </tile>
+  <tile id="11">
+   <objectgroup draworder="index">
+    <object id="0" x="19.4152" y="39.9896" width="42.5976" height="4.63647"/>
+   </objectgroup>
+  </tile>
+  <tile id="15">
+   <objectgroup draworder="index">
+    <object id="0" x="22.8926" y="38.2509" width="40.2793" height="6.08537"/>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <layer name="base" width="4" height="4">
+  <properties>
+   <property name="lifespan" type="int" value="4"/>
+  </properties>
+  <data encoding="base64">
+   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+  </data>
+ </layer>
+</map>
