@@ -1,6 +1,7 @@
 local STI = require 'libs.STI'
 local bump = require 'libs.bump.bump'
 local ElementManager = require 'game.world.elements.element_manager'
+local Util = require 'util'
 
 local g = love.graphics
 
@@ -65,12 +66,11 @@ function Map:draw(x, y, width, height)
         element:draw()
     end
 
-    -- Draw Collision Map (useful for debugging)
-    g.setColor(255, 0, 0, 255)
-    self.map:bump_draw(self.world)
+    if Util:isDebug() then
+        -- Draw Collision Map (useful for debugging)
+        self.map:bump_draw(self.world)
+    end
 
-    -- Reset color
-    g.setColor(255, 255, 255, 255)
 end
 
 function Map:update(dt)

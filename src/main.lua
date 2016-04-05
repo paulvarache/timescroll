@@ -7,6 +7,7 @@ local camera = require 'game.render.camera'
 local Map = require 'game.render.map'
 local Player = require 'game.world.characters.player'
 local TimeTravelManager = require 'game.time.time_travel_manager'
+local Util = require 'util'
 
 local map
 local player
@@ -53,6 +54,9 @@ end
 
 function love.keyreleased(key)
     player:keyreleased(key)
+    if key == "tab" then
+        Util:setDebug(not Util:isDebug())
+    end
 end
 
 function love.draw()
@@ -65,10 +69,12 @@ function love.draw()
 
     debugStack = {}
 
-    stackDebug(TimeTravelManager:getDebug())
-    stackDebug(player:getDebug())
-
-    for i, line in pairs(debugStack) do
-        g.print(line, 10, (i - 1) * 20 + 10)
+    if Util:isDebug() then
+        stackDebug(TimeTravelManager:getDebug())
+        stackDebug(player:getDebug())
+        for i, line in pairs(debugStack) do
+            g.print(line, 10, (i - 1) * 20 + 10)
+        end
     end
+
 end
