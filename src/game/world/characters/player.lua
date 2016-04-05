@@ -5,6 +5,9 @@ local g = love.graphics
 local k = love.keyboard
 
 local jumpKey = "space"
+local MATERIALS = require 'game.world.physics.materials'
+
+local Friction = require 'game.world.physics.friction'
 
 local Player = {}
 Player.__index = Player
@@ -20,6 +23,7 @@ function Player.create(world)
     self.brake = 800
     self.fallAccel = 900
     self.direction = 1
+    self.typeTouching = MATERIALS.AIR
     return self
 end
 
@@ -33,7 +37,7 @@ end
 function Player:applyBrake(dt)
     -- air friction. 1 means do not affect brake speed
     -- Touching the ground, the friction is higher => almost immediate stop
-    local friction = self.canJump and 4 or 1
+    local friction = Friction:get(self.typeTouching)
     if self.vx < 0 then
         self.vx = math.min(0, self.vx + (self.brake * dt * friction))
     else
@@ -67,9 +71,11 @@ function Player:update(dt)
     local ax, ay, cols, len = self:setPosition(x, y)
     if len == 0 then
         self.canJump = false
+        self.typeTouching = MATERIALS.AIR
     end
-    for _, col in pairs(cols) do
+    for _, col in ipairs(cols) do
         if col.normal.y == -1 then
+            self.typeTouching = col.other.properties and col.other.properties.material or MATERIALS.GROUND
             self.canJump = true
             break
         end
