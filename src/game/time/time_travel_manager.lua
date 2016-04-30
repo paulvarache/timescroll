@@ -1,6 +1,5 @@
 local g = love.graphics
 
-
 local SEASON_NAMES = {
     'spring',
     'summer',
@@ -55,6 +54,11 @@ function TimeTravelManager:backward(year)
             self.season = self.season - 1
         end
     end
+end
+
+-- TODO compute actual travel speed
+function TimeTravelManager:getTravelSpeed()
+    return 0
 end
 
 function TimeTravelManager:getSeasonName()

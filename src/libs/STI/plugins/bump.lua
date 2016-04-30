@@ -35,20 +35,30 @@ return {
 
 		for _, layer in ipairs(map.layers) do
 			-- Entire layer
-			if layer.properties.collidable == "true" then
-				if layer.type == "tilelayer" then
-					for y, tiles in ipairs(layer.data) do
-						for x, tile in pairs(tiles) do
+			if layer.type == "tilelayer" then
+				for y, tiles in ipairs(layer.data) do
+					for x, tile in pairs(tiles) do
+                        if layer.properties.collidable == "true" then
 							local t = {properties = tile.properties, x = x * map.tilewidth + tile.offset.x + map.offsetx, y = y * map.tileheight + tile.offset.y + map.offsety, width = tile.width, height = tile.height, layer = layer }
 							world:add(t, t.x,t.y, t.width,t.height )
 							table.insert(collidables,t)
-						end
+                        elseif tile.objectGroup then
+                            for _, obj in pairs(tile.objectGroup.objects) do
+                                if obj.properties and obj.properties.collidable == "true" and obj.shape == "rectangle" then
+                                    local tilePos = { x = x * map.tilewidth + tile.offset.x + map.offsetx, y = y * map.tileheight + tile.offset.y + map.offsety }
+    								local t = {properties = obj.properties, x = tilePos.x + obj.x, y = tilePos.y + obj.y, width = obj.width, height = obj.height, type = obj.type, name = obj.name, id = obj.id, gid = obj.gid, layer = layer }
+    								if obj.gid then t.y = t.y - obj.height end
+    								world:add(t, t.x,t.y, t.width,t.height )
+    								table.insert(collidables,t)
+    							end
+                            end
+                        end
 					end
-				elseif layer.type == "imagelayer" then
-					world:add(layer, layer.x,layer.y, layer.width,layer.height)
-					table.insert(collidables,layer)
 				end
-		  end
+			elseif layer.type == "imagelayer" then
+				world:add(layer, layer.x,layer.y, layer.width,layer.height)
+				table.insert(collidables,layer)
+			end
 			-- individual collidable objects in a layer that is not "collidable"
 			-- or whole collidable objects layer
 		  if layer.type == "objectgroup" then

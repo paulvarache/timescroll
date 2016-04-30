@@ -1,6 +1,6 @@
-local Character = require 'game.world.characters.character'
+local Character = require 'game.world.character.character'
 
-local HC = require 'libs.bump.bump'
+local Util = require 'util'
 local g = love.graphics
 local k = love.keyboard
 
@@ -78,6 +78,8 @@ function Player:update(dt)
             self.typeTouching = col.other.properties and col.other.properties.material or MATERIALS.GROUND
             self.canJump = true
             break
+        elseif col.normal.y == 1 then
+            self.vy = 0
         end
     end
     if self.canJump then
@@ -118,11 +120,23 @@ function Player:getDebug()
 end
 
 function Player:setPosition(x, y)
-    return self.world:move(self.shape, x, y)
+    return self.world:move(self.shape, x, y, self:getFilter())
 end
 
 function Player:getPosition()
     return self.world:getRect(self.shape)
+end
+
+local playerFilter = function(_, other)
+    if other.layer and not other.layer.visible then
+        return nil
+    else
+        return 'slide'
+    end
+end
+
+function Player:getFilter()
+    return playerFilter;
 end
 
 return Player

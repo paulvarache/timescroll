@@ -3,6 +3,7 @@ local MATERIALS = require 'game.world.physics.materials'
 local FRICTIONS = {}
 FRICTIONS[MATERIALS.GROUND] = 4
 FRICTIONS[MATERIALS.AIR] = 1
+FRICTIONS[MATERIALS.ICE] = 0.1
 
 local Friction = {}
 

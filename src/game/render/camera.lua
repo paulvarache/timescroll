@@ -8,12 +8,14 @@ camera.y = 0
 camera.scaleX = 1
 camera.scaleY = 1
 camera.rotation = 0
+camera.intensity = 0
 
 function camera:set()
+    local shaking = math.random() > 0.5 and self.intensity or -self.intensity
     g.push()
     g.rotate(-self.rotation)
     g.scale(1 / self.scaleX, 1/ self.scaleY)
-    g.translate(-self.x, -self.y)
+    g.translate(-self.x + shaking, -self.y)
 end
 
 function camera:unset()
@@ -43,6 +45,10 @@ end
 function camera:setScale(sx, sy)
     self.scaleX = sx or self.scaleX
     self.scaleY = sy or self.scaleY
+end
+
+function camera:shake(intensity)
+    self.intensity = intensity
 end
 
 function camera:focus(player, map)

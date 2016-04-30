@@ -1,25 +1,9 @@
 local g = love.graphics
 
+local STI = require 'libs.STI'
+local Util = require 'util'
+
 local TimeTravelManager = require 'game.time.time_travel_manager'
-
--- https://github.com/stevedonovan/Penlight/blob/master/lua/pl/path.lua#L286
-local function formatPath(path)
-	local np_gen1,np_gen2  = '[^SEP]+SEP%.%.SEP?','SEP+%.?SEP'
-	local np_pat1, np_pat2 = np_gen1:gsub('SEP','/'), np_gen2:gsub('SEP','/')
-	local k
-
-	repeat -- /./ -> /
-		path,k = path:gsub(np_pat2,'/')
-	until k == 0
-
-	repeat -- A/../ -> (empty)
-		path,k = path:gsub(np_pat1,'')
-	until k == 0
-
-	if path == '' then path = '.' end
-
-	return path
-end
 
 local Element = {}
 
@@ -33,6 +17,11 @@ function Element.create()
     self.currentBoxes = {}
     self.timeIndex = TimeTravelManager:getTimeIndex()
     self.offset = 0
+    self.steps = {}
+    self.reversed = false
+    if math.random() > 0.5 then
+        self.reversed = true
+    end
     return self
 end
 
@@ -40,36 +29,44 @@ function Element:load(world, object)
     self.world = world
     local properties = object.properties
     self.offset = properties.offset
-    local f = dofile('../res/elements/' .. properties.type .. '.lua')
-    local tileset = f.tilesets[1]
-    local image = g.newImage(formatPath('res/elements/' .. tileset.image))
+    local stiObject = STI.new('res/elements/' .. properties.type .. '.lua')
+    for p in string.gmatch(stiObject.properties.steps, "([^ ]+)") do
+        table.insert(self.steps, tonumber(p))
+    end
+    local tileset = stiObject.tilesets[1]
+    local image = tileset.image
     image:setFilter('nearest', 'nearest')
-    local width = image:getWidth() / f.properties.lifespan
+    local width = image:getWidth() / stiObject.properties.lifespan
     local height = image:getHeight() / 4
     local id = 0
-    for season = 1, 4 do
-        for i = 1, f.properties.lifespan do
-            local moment = {}
-            moment.quad = g.newQuad(width * (i - 1), height * (season - 1), width, height, image:getWidth(), image:getHeight())
+    for _, tile in ipairs(stiObject.tiles) do
+        if tile.tileset == 1 then
+            local season = math.floor(tile.id / 4) + 1
+            local year = (tile.id % #self.steps) + 1
             local boxes = {}
-            for k, tile in ipairs(tileset.tiles) do
-                if tile.id == id then
-                    for _, object in ipairs(tile.objectGroup.objects) do
-                        if object.shape == "rectangle" then
-                            table.insert(boxes, {
-                                x = object.x,
-                                y = object.y,
-                                width = object.width,
-                                height = object.height
-                            })
+            if tile.objectGroup then
+                for _, object in ipairs(tile.objectGroup.objects) do
+                    if object.shape == "rectangle" then
+                        local box = {
+                            x = object.x,
+                            y = object.y,
+                            width = object.width,
+                            height = object.height
+                        }
+                        if self.reversed then
+                            box.x = tile.width - (box.x + box.width)
                         end
+                        table.insert(boxes, box)
                     end
                 end
             end
-            moment.boxes = boxes
-            self.states[i] = self.states[i] or {}
-            self.states[i][season] = moment
-            id = id + 1
+            if not self.states[year] then
+                self.states[year] = {}
+            end
+            self.states[year][season] = {
+                quad = tile.quad,
+                boxes = boxes
+            }
         end
     end
     self.tileset = image
@@ -103,8 +100,24 @@ function Element:draw()
     local state = self:getCurrentState()
     if state ~= nil then
         local quad = state.quad
-        g.draw(self.tileset, quad, self.pos.x, self.pos.y)
+        local direction = self.reversed and -1 or 1
+        -- TODO update when online
+        local offset = self.reversed and 64 or 0
+        g.draw(self.tileset, quad, self.pos.x, self.pos.y, 0, direction, 1, offset)
     end
+end
+
+-- Get the index of the stored state from the year
+function Element:getImageX(year)
+    local imageX
+    for i, v in ipairs(self.steps) do
+        if year == v then
+            return i
+        elseif year < v then
+            return i - 1
+        end
+    end
+    return #self.steps
 end
 
 function Element:getCurrentState()
@@ -112,7 +125,8 @@ function Element:getCurrentState()
     if year < 1 then
         return nil
     end
-    return self.states[math.min(year, #self.states)][TimeTravelManager.season]
+    local imageX = self:getImageX(year)
+    return self.states[imageX][TimeTravelManager.season]
 end
 
 

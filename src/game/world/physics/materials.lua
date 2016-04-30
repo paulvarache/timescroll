@@ -1,4 +1,5 @@
 return {
     GROUND  = 'ground',
-    AIR     = 'air'
+    AIR     = 'air',
+    ICE     = 'ice'
 }
