@@ -14,7 +14,6 @@ Map.__index = Map
 function Map.create(path)
     local self = setmetatable({}, Map)
     self.world = bump.newWorld(32)
-    self.elements = {}
     self.evolvable = {}
     self.playerLayerIndex = nil
     return self
@@ -24,6 +23,7 @@ function Map:load(path, player)
     self.map = STI.new(path, { "bump" })
     self.map:bump_init(self.world)
     local playerLayerIndex = #self.map.layers
+    local elements = {}
     for i, layer in ipairs(self.map.layers) do
         -- Get the player's layer index
         if layer.type == 'objectgroup' and layer.name == 'PlayerLayer' then
@@ -35,9 +35,12 @@ function Map:load(path, player)
                     self.spawnPoint = { x=(object.x), y=(object.y)}
                 -- Extract time elements
                 elseif object.type == 'time_element' then
+                    if not elements[i] then
+                        elements[i] = {}
+                    end
                     local element = ElementManager.create(object)
                     element:load(self.world, object)
-                    table.insert(self.elements, element)
+                    table.insert(elements[i], element)
                 end
             end
             -- Remove all the objects from the layer
@@ -54,6 +57,9 @@ function Map:load(path, player)
         end
     end
     self:addPlayerToLayer(player, playerLayerIndex)
+    for i, layerElements in pairs(elements) do
+        self:addElementsToLayer(layerElements, i)
+    end
     g.setBackgroundColor(self.map.backgroundcolor)
 end
 
@@ -79,10 +85,6 @@ function Map:draw(x, y, width, height)
     -- Draw the map and all objects within
     self.map:draw()
 
-    for _, element in pairs(self.elements) do
-        element:draw()
-    end
-
     if Util:isDebug() then
         love.graphics.setLineWidth(1)
         -- Draw Collision Map (useful for debugging)
@@ -93,9 +95,6 @@ end
 
 function Map:update(dt)
     self.map:update(dt)
-    for _, element in pairs(self.elements) do
-        element:update(dt)
-    end
     for _, group in pairs(self.evolvable) do
         local layerVisible = false
         for season, layer in pairs(group) do
@@ -132,6 +131,29 @@ function Map:addPlayerToLayer(player, layerIndex)
     -- draw callback for custom layer
     function playerLayer:draw()
         self.player:draw()
+    end
+end
+
+function Map:addElementsToLayer(elements, layerIndex)
+    -- creating a custom layer for the player and placing it into the maps layers
+    -- just above the objects layer
+    local elementsLayer = self.map:convertToCustomLayer(layerIndex)
+
+    -- adding data to the custom layer
+    elementsLayer.elements = elements
+
+    -- update callback for custom layer
+    function elementsLayer:update(dt)
+        for _, element in pairs(self.elements) do
+            element:update(dt)
+        end
+    end
+
+    -- draw callback for custom layer
+    function elementsLayer:draw()
+        for _, element in pairs(self.elements) do
+            element:draw()
+        end
     end
 end
 

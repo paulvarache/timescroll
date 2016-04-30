@@ -33,6 +33,7 @@ function Level:load()
 end
 
 function Level:update(dt)
+    TimeTravelManager:update(dt)
     Camera:shake(TimeTravelManager:getTravelSpeed() * dt)
     Camera:focus(self.player, self.map)
     self.map:update(dt)
@@ -48,7 +49,6 @@ end
 
 function Level:keypressed(key)
     self.player:keypressed(key)
-    TimeTravelManager:keypressed(key)
 end
 
 function Level:keyreleased(key)

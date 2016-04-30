@@ -16,6 +16,8 @@ local TimeTravelManager = {}
 
 TimeTravelManager.year = 1
 TimeTravelManager.season = 1
+TimeTravelManager.velocity = 0
+TimeTravelManager.deltaAcc = 0
 
 function TimeTravelManager:keypressed(key)
     if key == YEAR_FWD_KEY then
@@ -30,35 +32,38 @@ function TimeTravelManager:keypressed(key)
     end
 end
 
-function TimeTravelManager:forward(year)
-    if (year) then
+function TimeTravelManager:travel(dir)
+    if dir < 0 and self.year == 1 and self.season == 1 then
+        self.velocity = 0
+        return
+    end
+    self.season = self.season + dir
+    if self.season == 5 then
+        self.season = 1
         self.year = self.year + 1
-    else
-        if self.season == 4 then
-            self.year = self.year + 1
-            self.season = 1
-        else
-            self.season = self.season + 1
-        end
-    end
-end
-
-function TimeTravelManager:backward(year)
-    if (year) then
+    elseif self.season == 0 then
+        self.season = 4
         self.year = math.max(1, self.year - 1)
-    else
-        if self.season == 1 then
-            self.year = math.max(1, self.year - 1)
-            self.season = 4
-        else
-            self.season = self.season - 1
-        end
     end
 end
 
--- TODO compute actual travel speed
+function TimeTravelManager:update(dt)
+    self.deltaAcc = self.deltaAcc + dt
+    if love.keyboard.isDown(SEASON_FWD_KEY) then
+        self.velocity = math.max(1, math.min(8, self.velocity + (2 * dt)))
+    elseif love.keyboard.isDown(SEASON_BCK_KEY) then
+        self.velocity = math.min(-1, math.max(-8, self.velocity - (2 * dt)))
+    else
+        self.velocity = 0
+    end
+    if self.deltaAcc > (0.5 / math.abs(self.velocity)) then
+        self:travel(self.velocity < 0 and -1 or 1)
+        self.deltaAcc = 0
+    end
+end
+
 function TimeTravelManager:getTravelSpeed()
-    return 0
+    return math.abs(self.velocity) * 20
 end
 
 function TimeTravelManager:getSeasonName()
@@ -72,7 +77,8 @@ end
 function TimeTravelManager:getDebug()
     return {
         'Year: ' .. self.year,
-        'Season: ' .. self:getSeasonName()
+        'Season: ' .. self:getSeasonName(),
+        'Time velocity: ' .. self.velocity
     }
 end
 

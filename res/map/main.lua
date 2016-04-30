@@ -293,16 +293,6 @@ return {
     },
     {
       type = "objectgroup",
-      name = "PlayerLayer",
-      visible = true,
-      opacity = 1,
-      offsetx = 0,
-      offsety = 0,
-      properties = {},
-      objects = {}
-    },
-    {
-      type = "objectgroup",
       name = "Objects",
       visible = true,
       opacity = 1,
@@ -630,6 +620,16 @@ return {
           }
         }
       }
+    },
+    {
+      type = "objectgroup",
+      name = "PlayerLayer",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      properties = {},
+      objects = {}
     },
     {
       type = "tilelayer",
