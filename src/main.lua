@@ -35,7 +35,7 @@ function love.keypressed(key)
 end
 
 function love.keyreleased(key)
-    GameStateManager:keypressed(key)
+    GameStateManager:keyreleased(key)
     if key == "tab" then
         Util:setDebug(not Util:isDebug())
     end
