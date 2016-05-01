@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="4" height="4" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="Player" tilewidth="50" tileheight="50" tilecount="2" columns="2">
+  <image source="../images/characters/player.png" width="100" height="50"/>
+  <tile id="0">
+   <objectgroup draworder="index">
+    <object id="0" x="28.9964" y="29.3937" width="16.9808" height="18.4703"/>
+    <object id="0" x="28.9964" y="12.0157" width="14.8954" height="17.2787"/>
+    <object id="0" x="21.0522" y="17.2787" width="7.94423" height="12.4129"/>
+   </objectgroup>
+  </tile>
+  <tile id="1">
+   <objectgroup draworder="index">
+    <object id="0" x="4.07142" y="29.0957" width="16.8815" height="18.8675"/>
+    <object id="0" x="6.05748" y="12.0157" width="14.7961" height="17.0801"/>
+    <object id="0" x="20.8536" y="16.1864" width="8.14284" height="12.9094"/>
+   </objectgroup>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="4" height="4">
+  <data encoding="base64">
+   AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
+  </data>
+ </layer>
+</map>

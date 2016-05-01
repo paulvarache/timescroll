@@ -1,5 +1,6 @@
 local STI = require 'libs.STI'
 local bump = require 'libs.bump.bump'
+local Slope = require 'game.render.slope'
 local ElementManager = require 'game.world.elements.element_manager'
 local TimeTravelManager = require 'game.time.time_travel_manager'
 local Util = require 'util'
@@ -15,15 +16,49 @@ function Map.create(path)
     local self = setmetatable({}, Map)
     self.world = bump.newWorld(32)
     self.evolvable = {}
+    self.slopes = {}
     self.playerLayerIndex = nil
     return self
+end
+
+local slope = function (world, col, x,y,w,h, goalX, goalY, filter)
+
+    col.slope = {
+        touches = false
+    }
+
+    local itemCenterX = col.itemRect.x + (col.itemRect.w / 2)
+    if itemCenterX - col.other.x > 0 then
+        local slopeY = col.other.slope:getY(itemCenterX) - col.itemRect.h
+        col.slope.angle = col.other.slope.angle
+        col.slope.down = col.other.slope.down
+        if slopeY < goalY + 1 then
+            goalY = slopeY
+            col.slope.touches = true
+        end
+    end
+
+    local cols, len = world:project(col.item, x,y,w,h, goalX, goalY, filter)
+    --[[for _, c in ipairs(cols) do
+        if c.normal.x == -1 and col.slope.touches and c.type == 'slide' then
+            print(Util.inspect(c))
+        end
+    end]]--
+    return goalX, goalY, cols, len
 end
 
 function Map:load(path, player)
     self.map = STI.new(path, { "bump" })
     self.map:bump_init(self.world)
+    self.world:addResponse('slope', slope)
     local playerLayerIndex = #self.map.layers
     local elements = {}
+    for _, collidable in ipairs(self.map.bump_collidables) do
+        if collidable.properties and collidable.properties.slope then
+            local slope = Slope.create(collidable, world)
+            collidable.slope = slope
+        end
+    end
     for i, layer in ipairs(self.map.layers) do
         -- Get the player's layer index
         if layer.type == 'objectgroup' and layer.name == 'PlayerLayer' then
@@ -90,11 +125,17 @@ function Map:draw(x, y, width, height)
         -- Draw Collision Map (useful for debugging)
         self.map:bump_draw(self.world)
     end
+    for _, slope in ipairs(self.slopes) do
+        slope:draw()
+    end
 
 end
 
 function Map:update(dt)
     self.map:update(dt)
+    for _, slope in ipairs(self.slopes) do
+        slope:update(dt)
+    end
     for _, group in pairs(self.evolvable) do
         local layerVisible = false
         for season, layer in pairs(group) do

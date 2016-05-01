@@ -30,8 +30,13 @@ end
 function Player:load()
     self.image = g.newImage('res/images/characters/player.png')
     self.image:setFilter('nearest', 'nearest')
-    self.shape = { name = "Player" }
-    self.world:add(self.shape, self.x, self.y, self.image:getWidth() - 5, self.image:getHeight() - 15)
+    self.width = self.image:getWidth() - 5
+    self.height = self.image:getHeight() - 15
+    self.shapes = {
+        body = {},
+        slope = {}
+    }
+    self.world:add(self.shapes.body, self.x, self.y, self.width, self.height)
 end
 
 function Player:applyBrake(dt)
@@ -69,17 +74,27 @@ function Player:update(dt)
     x = x + self.vx * dt
     y = y + self.vy * dt
     local ax, ay, cols, len = self:setPosition(x, y)
-    if len == 0 then
-        self.canJump = false
-        self.typeTouching = MATERIALS.AIR
-    end
+    self.canJump = false
+    self.typeTouching = MATERIALS.AIR
+    self.rotate = 0
     for _, col in ipairs(cols) do
-        if col.normal.y == -1 then
-            self.typeTouching = col.other.properties and col.other.properties.material or MATERIALS.GROUND
-            self.canJump = true
-            break
-        elseif col.normal.y == 1 then
-            self.vy = 0
+        if col.type == 'slope' then
+            if col.slope.touches then
+                self.rotate = col.slope.angle
+                if not col.slope.down then
+                    self.rotate = math.pi * 2 - self.rotate
+                end
+                self.typeTouching = col.other.properties and col.other.properties.material or MATERIALS.GROUND
+                self.canJump = true
+            end
+        else
+            if col.normal.y == -1 then
+                self.typeTouching = col.other.properties and col.other.properties.material or MATERIALS.GROUND
+                self.canJump = true
+                break
+            elseif col.normal.y == 1 then
+                self.vy = 0
+            end
         end
     end
     if self.canJump then
@@ -120,14 +135,17 @@ function Player:getDebug()
 end
 
 function Player:setPosition(x, y)
-    return self.world:move(self.shape, x, y, self:getFilter())
+    return self.world:move(self.shapes.body, x, y, self:getFilter())
 end
 
 function Player:getPosition()
-    return self.world:getRect(self.shape)
+    return self.world:getRect(self.shapes.body)
 end
 
-local playerFilter = function(_, other)
+local playerFilter = function(item, other)
+    if other.properties and other.properties.slope then
+        return 'slope'
+    end
     if other.layer and not other.layer.visible then
         return nil
     else

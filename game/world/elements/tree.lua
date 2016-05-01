@@ -10,6 +10,12 @@ Tree.__index = Tree
 
 function Tree.create()
     local self = setmetatable({}, Tree)
+    self.image = love.graphics.newImage('res/images/tree.png')
+    self.quads = {
+        center = love.graphics.newQuad(8, 8, 8, 8, self.image:getDimensions()),
+        left = love.graphics.newQuad(0, 8, 8, 8, self.image:getDimensions()),
+        right = love.graphics.newQuad(16, 8, 8, 8, self.image:getDimensions())
+    }
     self.pos = {}
     self.cache = {}
     self.treeString = ''
@@ -58,27 +64,17 @@ function Tree:getProcessors(turtle)
     local season = TimeTravelManager.season
     processors['X'] = function (step)
         if season == 1 then
-            love.graphics.setLineWidth(2)
-            love.graphics.setColor(231, 146, 236)
             turtle:move(2)
         elseif season == 2 then
-            love.graphics.setLineWidth(3)
-            love.graphics.setColor(6, 66, 10)
             turtle:move(3)
         elseif season == 3 then
-            love.graphics.setLineWidth(2)
-            love.graphics.setColor(249, 107, 62)
             turtle:move(2)
         end
     end
     processors['F'] = function (step)
-        love.graphics.setLineWidth(1)
-        love.graphics.setColor(70, 39, 8)
         turtle:move(3 * self.size)
     end
     processors['S'] = function (step)
-        love.graphics.setLineWidth(1)
-        love.graphics.setColor(70, 39, 8)
         turtle:move(1 * self.size)
     end
     processors['-'] = function ()
@@ -103,6 +99,21 @@ function Tree:draw()
     end
 
     local turtle = Turtle.create()
+    local image = self.image
+    local quads = self.quads
+
+    --[[function turtle:draw(x, y)
+        love.graphics.line(self.pos.x, self.pos.y, x, y)
+        local steps = math.sqrt(math.pow(x - self.pos.x, 2) + math.pow(y - self.pos.y, 2)) / 8
+        local xStep = (x - self.pos.x) / steps
+        local yStep = (y - self.pos.y) / steps
+        love.graphics.push()
+        love.graphics.translate(self.pos.x, self.pos.y)
+        for i=0, steps do
+            love.graphics.draw(image, quads.center, (xStep * i), (yStep * i), self.angle * (math.pi / 180), 1, 1, 4, 4)
+        end
+        love.graphics.pop()
+    end]]--
 
     turtle:moveTo(self.pos.x, self.pos.y)
     turtle:turn(-90)

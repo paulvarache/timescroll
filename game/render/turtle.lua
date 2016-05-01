@@ -22,9 +22,13 @@ function Turtle:move(d)
     local rad = self.angle * (math.pi / 180)
     local x = self.pos.x + d * math.cos(rad)
     local y = self.pos.y + d * math.sin(rad)
-    love.graphics.line(self.pos.x, self.pos.y, x, y)
+    self:draw(x, y)
     self.pos.x = x
     self.pos.y = y
+end
+
+function Turtle:draw(x, y)
+    love.graphics.line(self.pos.x, self.pos.y, x, y)
 end
 
 function Turtle:push()
