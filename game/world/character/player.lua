@@ -30,13 +30,14 @@ end
 function Player:load()
     self.image = g.newImage('res/images/characters/player.png')
     self.image:setFilter('nearest', 'nearest')
-    self.width = self.image:getWidth() - 5
-    self.height = self.image:getHeight() - 15
+    self.quad = love.graphics.newQuad(0, 0, 50, 50, self.image:getDimensions())
+    self.width = 50
+    self.height = 50
     self.shapes = {
         body = {},
         slope = {}
     }
-    self.world:add(self.shapes.body, self.x, self.y, self.width, self.height)
+    self.world:add(self.shapes.body, self.x, self.y, self.width - 10, self.height - 5)
 end
 
 function Player:applyBrake(dt)
@@ -118,11 +119,11 @@ end
 
 function Player:draw()
     local x, y = self:getPosition()
-    local offset = self.image:getWidth()
+    local offset = 50
     if (self.direction == 1) then
         offset = 0
     end
-    g.draw(self.image, x - 5, y - 5, 0, self.direction, 1, offset, 0)
+    g.draw(self.image, self.quad, x - 5, y - 5, 0, self.direction, 1, offset, 0)
 end
 
 function Player:getDebug()
